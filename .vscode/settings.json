@@ -1,0 +1,7 @@
+{
+    "editor.fontFamily": "Dank Mono, monospace",
+    "files.exclude": {
+        "": true,
+        "**/.git": false
+    }
+}

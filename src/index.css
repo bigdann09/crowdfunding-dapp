@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*,
+*::before,
+*::after {
+    font-family: "Barlow", sans-serif;
+}
+
+@layer base {
+  :root {
+        --radius: 0.5rem;
+    }
+}
