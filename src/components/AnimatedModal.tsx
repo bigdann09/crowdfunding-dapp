@@ -8,7 +8,7 @@ import { BiPlus } from 'react-icons/bi'
 
 export function AnimatedModal() {
     return (
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center modal">
             <Modal>
                 <ModalTrigger className="bg-sky-700 text-black  flex justify-center group/modal-btn">
                     <span className="text-center transition duration-500 flex items-center gap-x-1">
@@ -16,14 +16,14 @@ export function AnimatedModal() {
                         <span>Create Campaign</span>
                     </span>
                 </ModalTrigger>
-                <ModalBody className='h-auto overflow-y-scroll scroll-0'>
+                <ModalBody className='h-auto overflow-y-scroll modal'>
                     <ModalContent>
-                        <h4 className="text-lg md:text-xl text-neutral-600 dark:text-neutral-100 font-bold text-center mb-6">Create A Crowdfund Campaign</h4>
+                        <h4 className="text-lg md:text-xl text-neutral-600 dark:text-neutral-100 font-bold text-center mb-3">Create A Crowdfund Campaign</h4>
 
                         <div>
                             {/* form */}
-                            <form action="" className='space-y-4'>
-                                <div className="space-y-2">
+                            <form action="" className='space-y-2'>
+                                <div className="space-y-1">
                                     <label htmlFor="title" className='text-[1.1rem]'>Title</label>
                                     <input type="text" name="title" className='w-full h-[3rem] rounded-md px-2' />
                                 </div>

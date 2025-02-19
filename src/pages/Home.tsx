@@ -1,5 +1,8 @@
 import { FundCard } from '../components/FundCard';
 import One from '../assets/one.jpeg'
+import { useSuiClient, useSuiClientQuery } from '@mysten/dapp-kit';
+import { useNetworkVariable } from '@/networkConfig';
+import { getFullnodeUrl } from '@mysten/sui/client';
 
 const funds = [
     {
@@ -30,6 +33,23 @@ const funds = [
 ]
 
 const Home = () => {
+    const client = useSuiClient()
+    const crowdfundingID = useNetworkVariable("crowdfundingPackageID")
+
+
+    const { data: CampaignRes, isPending, error } = useSuiClientQuery(
+        "getObject", {
+        id: crowdfundingID,
+        options: {
+            showContent: true
+        }
+    });
+
+    if (isPending) return <div>Loading...</div>
+    if (error) return <div>Error</div>
+
+    if (!CampaignRes.data) return <div>Add Campaign</div>
+
     return (
         <>
             <section className='py-6'>

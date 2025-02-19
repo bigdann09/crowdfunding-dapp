@@ -9,7 +9,11 @@
 }
 
 @layer base {
-  :root {
+    :root {
         --radius: 0.5rem;
     }
+}
+
+.modal::-webkit-scrollbar {
+    width: 0;
 }
