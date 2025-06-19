@@ -1,8 +1,8 @@
-import { FundCard } from '../components/FundCard';
-import One from '../assets/one.jpeg'
+import { Campaign } from '../components/Campaign';
 import { useSuiClient, useSuiClientQuery } from '@mysten/dapp-kit';
-import { useNetworkVariable } from '@/networkConfig';
-import { getFullnodeUrl } from '@mysten/sui/client';
+import { useNetworkVariable } from '@/config/networkconfig';
+import {SuiObjectData } from '@mysten/sui/client';
+import One from '../assets/one.jpeg'
 
 const funds = [
     {
@@ -34,34 +34,43 @@ const funds = [
 
 const Home = () => {
     const client = useSuiClient()
-    const crowdfundingID = useNetworkVariable("crowdfundingPackageID")
+    const dashboardID = useNetworkVariable("crowdfundingDashboard")
 
+    function getDashboardFields(data: SuiObjectData | null | undefined) {
+        if (data == null || data == undefined) return null;
+        if (data.content?.dataType != "moveObject") return null;
 
-    const { data: CampaignRes, isPending, error } = useSuiClientQuery(
+        return data.content.fields as {
+            id: any,
+            campaigns: string[]
+        };
+    }
+
+    const { data: data, isPending } = useSuiClientQuery(
         "getObject", {
-        id: crowdfundingID,
-        options: {
-            showContent: true
+            id: dashboardID,
+            options: {
+                showContent: true
+            }
         }
-    });
-
-    if (isPending) return <div>Loading...</div>
-    if (error) return <div>Error</div>
-
-    if (!CampaignRes.data) return <div>Add Campaign</div>
+    )
 
     return (
         <>
             <section className='py-6'>
-                <div className='grid grid-cols-3 gap-4 py-2'>
-                    {funds.map((fund, idx) => (
-                        <FundCard
-                            key={idx}
-                            title={fund.title}
-                            image={fund.image}
-                            description={fund.description}
-                        />
-                    ))}
+                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 px-4 py-2'>
+                    {isPending ? (
+                        <div className='px-6'>Loading...</div>
+                    ): (
+                        <>
+                            {getDashboardFields(data?.data)?.campaigns.map((campaign, idx) => (
+                                <Campaign
+                                    key={idx}
+                                    id={campaign}
+                                />
+                            ))}
+                        </>
+                    )}
                 </div>
             </section>
         </>

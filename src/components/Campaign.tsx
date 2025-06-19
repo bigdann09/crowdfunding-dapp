@@ -1,39 +1,76 @@
 "use client";
 import { animate, motion } from "framer-motion";
-import React, { FC, useEffect } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { cn } from "../lib/utils";
 import { Link } from "react-router-dom";
+import { useSuiClientQuery } from "@mysten/dapp-kit";
+import { SuiObjectData } from "@mysten/sui/client";
+import useCampaign from "@/hooks/useCampaign";
+import { time } from "console";
 
-type FundCardProps = {
-    title: string;
-    image: string;
-    description: string;
+type CampaignProps = {
+    id: string
 }
 
 type SkeletonProps = {
     image: string
 }
 
-export const FundCard: FC<FundCardProps> = ({ title, image, description }) => {
+export const Campaign: FC<CampaignProps> = ({ id }) => {
+    const [hasStarted, setHasStarted] = useState(false)
+    const [hasEnded, setHasEnded] = useState(false)
+    const {parse, response} = useCampaign({id});
+
+    if (!response?.data) return null;
+
+    const campaign = parse(response.data);
+    const progress = (campaign.donations/campaign.goal) * 100;
+
+    useEffect(() => {
+        const timeInterval = setInterval(() => {
+            const startTime = Math.floor(campaign.startTime / 1000)
+            const endTime = Math.floor(campaign.endTime / 1000)
+            const now = Math.floor(Date.now() / 1000)
+
+            if (startTime > now) {
+                setHasStarted(false)
+                // update time counter
+            } else if (endTime > startTime) {
+                setHasEnded(true)
+                // update time counter
+            } else {
+                setHasStarted(false)
+                // update time counter
+            }
+        }, 1000)
+
+        return () => clearInterval(timeInterval)
+    }, [campaign])
+
     return (
         <Card className='relative'>
-            <div className='absolute top-1 -right-2 bg-[#282828] border border-sky-800/30 shadow-sm p-2 rounded-md text-sm'>Days Left: 3</div>
+            <div className='absolute top-1 -right-2 bg-[#282828] border border-sky-800/30 shadow-sm p-2 rounded-md text-sm'>{!hasStarted ? 'Not Started' : hasEnded ? 'Ended' : 'Days Left: 3'}</div>
             <CardSkeletonContainer>
-                <Skeleton image={image} />
+                <Skeleton image={campaign.image} />
             </CardSkeletonContainer>
-            <CardTitle>{title}</CardTitle>
+            <CardTitle>{campaign.title}</CardTitle>
             <CardDescription>
-                <p className='line-clamp-2'>{description}</p>
+                <p className='line-clamp-1'>{campaign.description}</p>
                 <div className='py-4'>
                     <div className='w-full flex justify-between text-xs text-gray-50'>
-                        <span className='font-bold'>Raised: 2.2SUI</span>
-                        <span>Target: 300SUI</span>
+                        <span className='font-bold'>Raised: {`${campaign.donations} SUI`}</span>
+                        <span>Target: {`${campaign.goal} SUI`}</span>
                     </div>
                     <div className='my-2 w-full relative h-[.3rem] bg-[#5a5b5d] rounded-md'>
-                        <div className='absolute left-0 top-0 w-[50%] h-full bg-sky-500 rounded-md'></div>
+                        <div className={`absolute left-0 top-0 h-full bg-sky-500 rounded-md`} style={{width: progress}}></div>
                     </div>
                 </div>
-                <Link to={`${encodeURI('campaign/' + title)}`} className='block  text-center w-full hover:scale-[1.1] duration-300 bg-white py-3 px-4 rounded-md text-gray-900'>Fund Campaign</Link>
+                {hasStarted && !hasEnded ? (
+                    <Link to={`${encodeURI('campaign/' + campaign.title)}`} className='block text-center w-full hover:scale-[1.1] duration-300 bg-white py-3 px-4 rounded-md text-gray-900'>Fund Campaign</Link>
+                ) : (
+                    <button className="block text-center w-full bg-neutral-950/30 py-3 px-4 rounded-md text-gray-300">
+                        {!hasStarted ? (<span>Starts in <b>1hr:22mins:24secs</b></span>) : hasEnded ? 'Ended' : null}</button>
+                )}
             </CardDescription>
         </Card>
     );
@@ -157,7 +194,7 @@ export const Card = ({
     return (
         <div
             className={cn(
-                "max-w-sm w-full mx-auto p-8 rounded-xl border border-[rgba(255,255,255,0.10)] dark:bg-[rgba(40,40,40,0.70)] bg-gray-100 shadow-[2px_4px_16px_0px_rgba(248,248,248,0.06)_inset] group",
+                "max-w-sm w-full mx-auto p-5 rounded-xl border border-[rgba(255,255,255,0.10)] dark:bg-[rgba(40,40,40,0.70)] bg-gray-100 shadow-[2px_4px_16px_0px_rgba(248,248,248,0.06)_inset] group",
                 className
             )}
         >

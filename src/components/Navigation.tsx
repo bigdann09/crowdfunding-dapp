@@ -5,7 +5,7 @@ import { AnimatedModal } from "./AnimatedModal"
 const Navigation = () => {
     return (
         <nav className='flex items-center justify-between px-3 py-5'>
-            <Link to="/" className='text-xl'>SUIFund</Link>
+            <Link to="/" className='text-xl font-bold relative before:absolute before:bottom-[2px] before:left-0 before:h-1 before:w-full before:bg-sky-700'>SUIFUND</Link>
             {/* search bar */}
             <div></div>
 

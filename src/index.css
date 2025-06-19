@@ -17,3 +17,15 @@
 .modal::-webkit-scrollbar {
     width: 0;
 }
+
+@layer input {
+    .input {
+        background-color: #171717 !important;
+        color: white !important;
+    }
+}
+
+.Button_buttonVariants_size_lg__x1s81q4 {
+    padding: 12px 15px !important;
+    border-radius: 5px !important;
+}

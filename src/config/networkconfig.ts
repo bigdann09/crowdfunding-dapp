@@ -6,8 +6,11 @@ import {
   TESTNET_CROWDFUNDING_CAP,
   TESTNET_CROWDFUNDING_PACKAGEID,
   MAINNET_CROWDFUNDING_CAP,
-  MAINNET_CROWDFUNDING_PACKAGEID
-} from "./lib/constants";
+  MAINNET_CROWDFUNDING_PACKAGEID,
+  DEVNET_CROWDFUNDING_DASHBOARD,
+  TESTNET_CROWDFUNDING_DASHBOARD,
+  MAINNET_CROWDFUNDING_DASHBOARD
+} from "../lib/constants";
 
 const { networkConfig, useNetworkVariable, useNetworkVariables } =
   createNetworkConfig({
@@ -15,6 +18,7 @@ const { networkConfig, useNetworkVariable, useNetworkVariables } =
       url: getFullnodeUrl("devnet"),
       variables: {
         crowdfundingPackageID: DEVNET_CROWDFUNDING_PACKAGEID,
+        crowdfundingDashboard: DEVNET_CROWDFUNDING_DASHBOARD,
         crowdfundingCap: DEVNET_CROWDFUNDING_CAP
       }
     },
@@ -22,6 +26,7 @@ const { networkConfig, useNetworkVariable, useNetworkVariables } =
       url: getFullnodeUrl("testnet"),
       variables: {
         crowdfundingPackageID: TESTNET_CROWDFUNDING_PACKAGEID,
+        crowdfundingDashboard: TESTNET_CROWDFUNDING_DASHBOARD,
         crowdfundingCap: TESTNET_CROWDFUNDING_CAP
       }
     },
@@ -29,6 +34,7 @@ const { networkConfig, useNetworkVariable, useNetworkVariables } =
       url: getFullnodeUrl("mainnet"),
       variables: {
         crowdfundingPackageID: MAINNET_CROWDFUNDING_PACKAGEID,
+        crowdfundingDashboard: MAINNET_CROWDFUNDING_DASHBOARD,
         crowdfundingCap: MAINNET_CROWDFUNDING_CAP
       }
     },
