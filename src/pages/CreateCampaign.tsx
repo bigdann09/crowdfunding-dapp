@@ -5,11 +5,14 @@ import { useNetworkVariable } from '@/config/networkconfig';
 import { Transaction } from '@mysten/sui/transactions';
 import { useSignTransaction, useSuiClient } from '@mysten/dapp-kit';
 import { DEVNET_CROWDFUNDING_DASHBOARD } from '@/lib/constants';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 const CreateCampaign = () => {
     const client = useSuiClient()
     const packageID = useNetworkVariable("crowdfundingPackageID")
     const { mutateAsync: signTransactionBlock } = useSignTransaction()
+    const [isLoading, setIsLoading] = useState(false)
 
     const createCampaignSchema = z.object({
         title: z.string()
@@ -32,6 +35,7 @@ const CreateCampaign = () => {
     const {
         formState: { errors },
         register,
+        reset,
         handleSubmit,
     } = useForm({ resolver: zodResolver(createCampaignSchema) });
 
@@ -42,33 +46,55 @@ const CreateCampaign = () => {
         const title = data.title;
         const description = data.description;
 
-        const tx = new Transaction();
-        tx.moveCall({
-            arguments: [
-                tx.object(DEVNET_CROWDFUNDING_DASHBOARD),
-                tx.pure.string(title),
-                tx.pure.string(description),
-                tx.pure.u64(startTime),
-                tx.pure.u64(endTime),
-                tx.pure.u64(goal),
-                tx.object.clock()
-            ],
-            target: `${packageID}::crowdfunding::create_campaign`
-        });
+        try {
+            setIsLoading(true)
 
-        const signature = await signTransactionBlock({
-            transaction: tx,
-        });
+            const textEncoder = new TextEncoder();
+            const titleBytes = textEncoder.encode(title);
+            const descriptionBytes = textEncoder.encode(description);
+            const tx = new Transaction();
+            tx.moveCall({
+                arguments: [
+                    tx.object(DEVNET_CROWDFUNDING_DASHBOARD),
+                    tx.pure(titleBytes),
+                    tx.pure(descriptionBytes),
+                    tx.pure.u64(startTime),
+                    tx.pure.u64(endTime),
+                    tx.pure.u64(goal),
+                    tx.object.clock()
+                ],
+                target: `${packageID}::crowdfunding::create_campaign`
+            });
 
-        const res = await client.executeTransactionBlock({
-            transactionBlock: signature.bytes,
-            signature: signature.signature,
-            options: {
-                showEffects: true,
-                showObjectChanges: true,
-            },
-        });
-        console.log(res);
+            const signature = await signTransactionBlock({
+                transaction: tx,
+            });
+
+            const result = await client.executeTransactionBlock({
+                transactionBlock: signature.bytes,
+                signature: signature.signature,
+                options: {
+                    showEffects: true,
+                    showObjectChanges: true,
+                },
+            });
+
+            const status = result.effects?.status?.status;
+            if (status !== 'success') {
+                toast.error(`Transaction failed: ${result.effects?.status?.error || 'Unknown error'}`);
+            }
+
+            const digest = result.digest;
+            console.log('Transaction successful, digest:', digest);
+            toast.success(`Transaction successfull ${digest}`)
+            reset()
+
+        } catch(error) {
+            console.error('Error creating campaign:', error);
+        }
+        finally {
+            setIsLoading(false)
+        }
     }
 
     return (
@@ -121,9 +147,10 @@ const CreateCampaign = () => {
                         <span className='text-red-300 text-xs'>{errors?.description?.message}</span>
                     </div>
                     <div>
-                        <button
-                            // onClick=''
-                            className='w-full py-2 px-4 rounded-md bg-sky-800'>Create Campaign</button>
+                        <button className='w-full py-2 px-4 rounded-md bg-sky-800 flex items-center justify-center gap-x-3'>
+                            {isLoading && (<span className='inline-block w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin'></span>)}
+                            <span>Create Campaign</span>
+                        </button>
                     </div>
                 </form>
             </div>

@@ -45,7 +45,7 @@ export const Campaign: FC<CampaignProps> = ({ id }) => {
         }, 1000)
 
         return () => clearInterval(timeInterval)
-    }, [campaign])
+    }, [campaign.startTime, campaign.endTime])
 
     return (
         <Card className='relative'>
