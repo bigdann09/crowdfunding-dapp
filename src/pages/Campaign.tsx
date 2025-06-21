@@ -25,20 +25,20 @@ const Campaign = () => {
     ]
     return (
         <main>
-            <section className='w-full relative py-3 mt-4 grid grid-cols-[75%_25%]'>
+            <section className='w-full relative py-3 mt-4 grid lg:grid-cols-[75%_25%] px-2'>
                 <div className='bg-green-700 h-[18rem] rounded-md relative before:absolute before:top-0 before:left-0 before:w-full before:h-full before:bg-gray-700/20 before:rounded-md'>
                     <img src={One} alt={"ddd"} className='w-full h-full object-cover rounded-md' />
                 </div>
-                <div className='w-full flex flex-col items-center gap-y-3'>
-                    <div className='w-[70%] bg-gray-800 shadow-sm rounded-md py-1'>
+                <div className='w-full flex flex-row md:flex-col items-center justify-center py-4 gap-x-3 gap-y-3'>
+                    <div className='w-[33.3%] md:w-[70%] bg-gray-800 shadow-sm rounded-md py-1'>
                         <h2 className='font-bold text-lg text-center bg-gray-900'>Days Left</h2>
-                        <p className='text-5xl text-center py-1'>3</p>
+                        <p className='text-[1.9rem] text-center py-1'>3</p>
                     </div>
-                    <div className='w-[70%] bg-gray-800 shadow-sm rounded-md py-1'>
+                    <div className='w-[33.3%] md:w-[70%] bg-gray-800 shadow-sm rounded-md py-1'>
                         <h2 className='font-bold text-lg text-center bg-gray-900'>Target</h2>
                         <p className='text-3xl text-center py-2'>200000 sui</p>
                     </div>
-                    <div className='w-[70%] bg-gray-800 shadow-sm rounded-md py-1'>
+                    <div className='w-[33.3%] md:w-[70%] bg-gray-800 shadow-sm rounded-md py-1'>
                         <h2 className='font-bold text-lg text-center bg-gray-900'>Raised</h2>
                         <p className='text-3xl text-center py-2'>1000 sui</p>
                     </div>
