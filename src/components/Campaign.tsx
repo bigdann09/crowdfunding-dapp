@@ -12,10 +12,6 @@ type CampaignProps = {
     id: string
 }
 
-type SkeletonProps = {
-    image: string
-}
-
 export const Campaign: FC<CampaignProps> = ({ id }) => {
     const [hasStarted, setHasStarted] = useState(false)
     const [hasEnded, setHasEnded] = useState(false)
@@ -28,14 +24,14 @@ export const Campaign: FC<CampaignProps> = ({ id }) => {
 
     // useEffect(() => {
     //     const timeInterval = setInterval(() => {
-    //         const startTime = Math.floor(campaign.startTime / 1000)
-    //         const endTime = Math.floor(campaign.endTime / 1000)
+    //         const parsedStartTime = Math.floor(startTime / 1000)
+    //         const parsedEndTime = Math.floor(endTime / 1000)
     //         const now = Math.floor(Date.now() / 1000)
 
-    //         if (startTime > now) {
+    //         if (parsedStartTime > now) {
     //             setHasStarted(false)
     //             // update time counter
-    //         } else if (endTime > startTime) {
+    //         } else if (parsedEndTime > parsedStartTime) {
     //             setHasEnded(true)
     //             // update time counter
     //         } else {
@@ -45,13 +41,13 @@ export const Campaign: FC<CampaignProps> = ({ id }) => {
     //     }, 1000)
 
     //     return () => clearInterval(timeInterval)
-    // }, [campaign.startTime, campaign.endTime])
+    // }, [startTime, endTime])
 
     return (
         <Card className='relative'>
             <div className='absolute top-1 -right-2 bg-[#282828] border border-sky-800/30 shadow-sm p-2 rounded-md text-sm'>{!hasStarted ? 'Not Started' : hasEnded ? 'Ended' : 'Days Left: 3'}</div>
             <CardSkeletonContainer>
-                <Skeleton image={campaign.image} />
+                <Skeleton />
             </CardSkeletonContainer>
             <CardTitle>{campaign.title}</CardTitle>
             <CardDescription>
@@ -76,7 +72,7 @@ export const Campaign: FC<CampaignProps> = ({ id }) => {
     );
 }
 
-const Skeleton: FC<SkeletonProps> = ({ image }) => {
+const Skeleton = () => {
     const scale = [1, 1.1, 1];
     const transform = ["translateY(0px)", "translateY(-4px)", "translateY(0px)"];
     const sequence = [
@@ -132,11 +128,8 @@ const Skeleton: FC<SkeletonProps> = ({ image }) => {
     return (
         <div className="p-8 overflow-hidden h-full relative flex items-center justify-center">
             <div className="flex flex-row flex-shrink-0 justify-center items-center gap-2">
-                <div>
-                    <img
-                        src={image}
-                        className='w-full h-[30rem] object-cover'
-                    />
+                <div className="bg-sky-900 w-full h-full">
+                    <div className="bg-sky-100/10 h-[30rem] w-[30rem]"></div>
                 </div>
             </div>
 

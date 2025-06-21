@@ -48,16 +48,12 @@ const CreateCampaign = () => {
 
         try {
             setIsLoading(true)
-
-            const textEncoder = new TextEncoder();
-            const titleBytes = textEncoder.encode(title);
-            const descriptionBytes = textEncoder.encode(description);
             const tx = new Transaction();
             tx.moveCall({
                 arguments: [
                     tx.object(DEVNET_CROWDFUNDING_DASHBOARD),
-                    tx.pure(titleBytes),
-                    tx.pure(descriptionBytes),
+                    tx.pure.string(title),
+                    tx.pure.string(description),
                     tx.pure.u64(startTime),
                     tx.pure.u64(endTime),
                     tx.pure.u64(goal),
@@ -100,7 +96,7 @@ const CreateCampaign = () => {
     return (
         <main className='w-[70%] md:w-[60%] lg:w-[55%] mx-auto pt-5'>
             <div className='w-full bg-neutral-950 p-4 rounded-lg'>
-                <h4 className="text-lg md:text-xl text-neutral-600 dark:text-neutral-100 font-bold text-center mb-3">Create A Crowdfund Campaign</h4>
+                <h4 className="text-lg md:text-xl text-neutral-600 dark:text-neutral-100 font-bold text-center mb-3">Create A Campaign</h4>
                 <form onSubmit={handleSubmit(createCampaign)} className='space-y-2'>
                     <div className="space-y-1">
                         <label htmlFor="title" className='text-[1.1rem]'>Title</label>

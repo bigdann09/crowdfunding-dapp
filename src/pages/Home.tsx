@@ -3,7 +3,7 @@ import useDashboard from '@/hooks/useDashboard';
 
 const Home = () => {
     const { parse, data, isPending } = useDashboard()
-    
+
     // reverse the slice to show new campaigns added
     const campaigns = parse(data?.data)?.campaigns.slice().reverse()
 
