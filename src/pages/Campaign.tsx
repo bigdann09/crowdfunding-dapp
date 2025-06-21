@@ -1,28 +1,43 @@
 import {
     Table,
     TableBody,
-    TableCaption,
     TableCell,
-    TableFooter,
     TableHead,
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
 import One from '../assets/one.jpeg'
+import { useNavigate, useParams } from "react-router-dom";
+import useCampaign from "@/hooks/useCampaign";
+
+interface Donation {
+    address: string;
+    amount: number;
+}
 
 const Campaign = () => {
-    const donors = [
-        {
-            address: "0x939393920029293939393",
-            amount: 10000,
-            date: '2022-02-01',
-        },
-        {
-            address: "0x339949393920029293939393",
-            amount: 400,
-            date: '2022-02-01',
-        }
-    ]
+
+    const { address } = useParams()
+    const navigate = useNavigate()
+
+    if (address == undefined) {
+        navigate("/")
+        return
+    }
+
+    function formatAddress(address: string) {
+        let start = address.substring(0, 6)
+        let end = address.substring(address.length - 6)
+        return `${start}****${end}`
+    }
+
+    const { parse, response, isPending } = useCampaign({id: address})
+
+    if (!response?.data) return null
+    if (isPending) return <div>Loading..</div>
+
+    const campaign = parse(response.data)
+
     return (
         <main>
             <section className='w-full relative py-3 mt-4 grid lg:grid-cols-[75%_25%] px-2'>
@@ -36,50 +51,55 @@ const Campaign = () => {
                     </div>
                     <div className='w-[33.3%] md:w-[70%] bg-gray-800 shadow-sm rounded-md py-1'>
                         <h2 className='font-bold text-lg text-center bg-gray-900'>Target</h2>
-                        <p className='text-3xl text-center py-2'>200000 sui</p>
+                        <p className='text-3xl text-center py-2'>{campaign.goal.toLocaleString()} sui</p>
                     </div>
                     <div className='w-[33.3%] md:w-[70%] bg-gray-800 shadow-sm rounded-md py-1'>
                         <h2 className='font-bold text-lg text-center bg-gray-900'>Raised</h2>
-                        <p className='text-3xl text-center py-2'>1000 sui</p>
+                        <p className='text-3xl text-center py-2'>{campaign.donations.toLocaleString()} sui</p>
                     </div>
                 </div>
             </section>
-            <section className='grid grid-cols-[66%_30%] items-start gap-x-4 px-3 pb-12'>
-                <div className='py-2 space-y-4'>
+            <section className='grid grid-cols-1 md:grid-cols-[66%_30%] items-start gap-x-4 px-3 pb-12 gap-y-4'>
+                <div className='py-2 space-y-4 order-2 md:order-1'>
                     <div>
                         <h4 className='text-lg font-bold'>Creator:</h4>
                         <div className='flex items-center  gap-x-2 mt-2'>
-                            <div className='w-[2rem] h-[2rem] rounded-full bg-red-400'></div>
-                            <p className='text-lg'>0xueureu399393udjdjmdmmdjii393893848484839</p>
+                            <div className='relative w-[2rem] h-[2rem] rounded-full bg-red-400 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:rounded-full before:bg-blue-100 before:backdrop-blur-[10rem]'></div>
+                            <p className='text-lg font-bold'>{formatAddress(campaign.creator)}</p>
                         </div>
                     </div>
                     <div>
                         <h4 className='text-lg font-bold'>Description:</h4>
-                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Perferendis nemo voluptatum impedit dignissimos, eaque cumque autem adipisci illum explicabo molestias consectetur amet earum iusto. Repellendus atque veniam quo qui tempore! Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic vel libero praesentium reiciendis eius a rem? Dicta optio incidunt adipisci accusantium, reprehenderit tempore voluptates error reiciendis tempora. Explicabo, obcaecati quod.</p>
+                        <p>{campaign.description}</p>
                     </div>
                     <div className='py-5 bg-neutral-900 px-2 rounded-md shadow-sm'>
                         <Table>
-                            <TableCaption>A list of donors.</TableCaption>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="w-[100px]">Address</TableHead>
+                                    <TableHead>Address</TableHead>
                                     <TableHead>Amount</TableHead>
-                                    <TableHead>Date</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {donors.map((donor, idx) => (
-                                    <TableRow key={idx}>
-                                        <TableCell className="font-medium">{donor.address}</TableCell>
-                                        <TableCell>{donor.amount}</TableCell>
-                                        <TableCell>{donor.date}</TableCell>
+                                {campaign.donors.length > 0 ? (
+                                    <>
+                                        {(campaign.donors as Donation[]).map((donor, idx) => (
+                                            <TableRow key={idx}>
+                                                <TableCell className="font-medium">{donor.address}</TableCell>
+                                                <TableCell>{donor.amount}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </>
+                                ): (
+                                    <TableRow>
+                                        <TableCell colSpan={3} className="text-center">No donations made.</TableCell>
                                     </TableRow>
-                                ))}
+                                )}
                             </TableBody>
                         </Table>
                     </div>
                 </div>
-                <div className='bg-gray-800 shadow-md border border-gray-900 rounded-md p-3 px-4 mt-6'>
+                <div className='bg-gray-800 shadow-md border border-gray-900 rounded-md p-3 px-4 mt-6 order-1 md:order-2'>
                     <form>
                         <div className='flex flex-col space-y-1'>
                             <label htmlFor="title">Amount</label>

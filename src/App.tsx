@@ -15,7 +15,7 @@ function App() {
         <Routes>
           <Route index element={<Home />} />
           <Route path='/create' element={<CreateCampaign />} />
-          <Route path='/campaign/:title' element={<Campaign />} />
+          <Route path='/campaign/:address' element={<Campaign />} />
         </Routes>
       </main>
     </>

@@ -26,26 +26,26 @@ export const Campaign: FC<CampaignProps> = ({ id }) => {
     const campaign = parse(response.data);
     const progress = (campaign.donations/campaign.goal) * 100;
 
-    useEffect(() => {
-        const timeInterval = setInterval(() => {
-            const startTime = Math.floor(campaign.startTime / 1000)
-            const endTime = Math.floor(campaign.endTime / 1000)
-            const now = Math.floor(Date.now() / 1000)
+    // useEffect(() => {
+    //     const timeInterval = setInterval(() => {
+    //         const startTime = Math.floor(campaign.startTime / 1000)
+    //         const endTime = Math.floor(campaign.endTime / 1000)
+    //         const now = Math.floor(Date.now() / 1000)
 
-            if (startTime > now) {
-                setHasStarted(false)
-                // update time counter
-            } else if (endTime > startTime) {
-                setHasEnded(true)
-                // update time counter
-            } else {
-                setHasStarted(false)
-                // update time counter
-            }
-        }, 1000)
+    //         if (startTime > now) {
+    //             setHasStarted(false)
+    //             // update time counter
+    //         } else if (endTime > startTime) {
+    //             setHasEnded(true)
+    //             // update time counter
+    //         } else {
+    //             setHasStarted(false)
+    //             // update time counter
+    //         }
+    //     }, 1000)
 
-        return () => clearInterval(timeInterval)
-    }, [campaign.startTime, campaign.endTime])
+    //     return () => clearInterval(timeInterval)
+    // }, [campaign.startTime, campaign.endTime])
 
     return (
         <Card className='relative'>

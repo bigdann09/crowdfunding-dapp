@@ -1,6 +1,5 @@
 import { useSuiClientQuery } from '@mysten/dapp-kit'
 import { SuiObjectData } from '@mysten/sui/client';
-import React from 'react'
 
 const useCampaign = ({ id }: { id: string }) => {
   const { data: response, refetch: refetch, error, isPending } = useSuiClientQuery(
