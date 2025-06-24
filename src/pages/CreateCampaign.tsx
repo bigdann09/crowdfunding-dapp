@@ -1,12 +1,13 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from 'zod'
 import { useNetworkVariable } from '@/config/networkconfig';
 import { Transaction } from '@mysten/sui/transactions';
 import { useSignTransaction, useSuiClient } from '@mysten/dapp-kit';
 import { DEVNET_CROWDFUNDING_DASHBOARD } from '@/lib/constants';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { createCampaignSchema } from '@/lib/schemas/campaign';
+import { useNavigate } from 'react-router-dom';
 
 const CreateCampaign = () => {
     const client = useSuiClient()
@@ -14,24 +15,9 @@ const CreateCampaign = () => {
     const { mutateAsync: signTransactionBlock } = useSignTransaction()
     const [isLoading, setIsLoading] = useState(false)
 
-    const createCampaignSchema = z.object({
-        title: z.string()
-            .min(10, { message: "Title must be at least 10 characters long" }),
-        goal: z.coerce.number()
-            .min(5, { message: "Goal must be at least 5" }),
-        startDate: z.coerce.date().refine((date) => !isNaN(date.getTime()), {
-            message: "Invalid start datetime",
-          }),
-        endDate: z.coerce.date().refine((date) => !isNaN(date.getTime()), {
-            message: "Invalid end datetime",
-        }),
-        description: z.string()
-            .min(5, { message: "Description must be at least 5 characters long" })
-    }).refine((data) => data.endDate > data.startDate, {
-        message: "End date must be after start date",
-        path: ["endDate"],
-    });
+    const navigate = useNavigate()
 
+    // update zod
     const {
         formState: { errors },
         register,
@@ -83,7 +69,9 @@ const CreateCampaign = () => {
             const digest = result.digest;
             console.log('Transaction successful, digest:', digest);
             toast.success(`Transaction successfull ${digest}`)
+
             reset()
+            navigate("/")
 
         } catch(error) {
             console.error('Error creating campaign:', error);
@@ -143,7 +131,7 @@ const CreateCampaign = () => {
                         <span className='text-red-300 text-xs'>{errors?.description?.message}</span>
                     </div>
                     <div>
-                        <button className='w-full py-2 px-4 rounded-md bg-sky-800 flex items-center justify-center gap-x-3'>
+                        <button className='w-full py-2 px-4 rounded-md bg-sky-800 flex items-center justify-center gap-x-3' disabled={isLoading}>
                             {isLoading && (<span className='inline-block w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin'></span>)}
                             <span>Create Campaign</span>
                         </button>

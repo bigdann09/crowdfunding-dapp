@@ -22,6 +22,30 @@ export const Campaign: FC<CampaignProps> = ({ id }) => {
     const campaign = parse(response.data);
     const progress = (campaign.donations/campaign.goal) * 100;
 
+    console.log(`startTime: ${campaign.startTime}, endTime: ${campaign.endTime}`)
+
+    function updateCountdown() {
+        const start = new Date(campaign.startTime)
+        const end = new Date(campaign.endTime)
+        const now = new Date()
+
+        if (now < start) {
+            setHasStarted(false)
+            setHasEnded(false)
+            console.log(has )
+        } else if ((end.getTime() - now.getTime()) < 0) {
+            setHasEnded(true)
+        } else {
+            setHasStarted(true)
+        }
+    }
+
+    useEffect(() => {
+        let timer = setInterval(() => updateCountdown(), 1000)
+        return () => clearInterval(timer)
+    }, [])
+
+
     // useEffect(() => {
     //     const timeInterval = setInterval(() => {
     //         const parsedStartTime = Math.floor(startTime / 1000)

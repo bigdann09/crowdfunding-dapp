@@ -9,6 +9,14 @@ import {
 import One from '../assets/one.jpeg'
 import { useNavigate, useParams } from "react-router-dom";
 import useCampaign from "@/hooks/useCampaign";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Transaction } from "@mysten/sui/transactions";
+import { useNetworkVariable } from "@/config/networkconfig";
+import { useSignTransaction, useSuiClient } from "@mysten/dapp-kit";
+import { useState } from "react";
+import { toast } from "sonner";
+import { donateSchema } from "@/lib/schemas/donate";
 
 interface Donation {
     address: string;
@@ -16,6 +24,13 @@ interface Donation {
 }
 
 const Campaign = () => {
+    const [isLoading, setIsLoading] = useState(false)
+
+    const client = useSuiClient()
+    const packageID = useNetworkVariable("crowdfundingPackageID")
+    const { mutateAsync: signTransactionBlock } = useSignTransaction()
+
+    const { register, handleSubmit, reset, formState: {errors} } = useForm({ resolver: zodResolver(donateSchema) })
 
     const { address } = useParams()
     const navigate = useNavigate()
@@ -37,6 +52,51 @@ const Campaign = () => {
     if (isPending) return <div>Loading..</div>
 
     const campaign = parse(response.data)
+
+    async function donateFunds(data: any) {
+        const amount = data.amount;
+
+        try {
+            setIsLoading(true)
+            const tx = new Transaction();
+            tx.moveCall({
+                arguments: [
+                    tx.object(address!),
+                    tx.pure.u64(amount),
+                    tx.object.clock()
+                ],
+                target: `${packageID}::crowdfunding::pledge`
+            })
+
+            const signature = await signTransactionBlock({
+                transaction: tx,
+            });
+
+            const result = await client.executeTransactionBlock({
+                transactionBlock: signature.bytes,
+                signature: signature.signature,
+                options: {
+                    showEffects: true,
+                    showObjectChanges: true,
+                },
+            });
+
+            const status = result.effects?.status?.status;
+            if (status !== 'success') {
+                toast.error(`Transaction failed: ${result.effects?.status?.error || 'Unknown error'}`);
+            }
+
+            const digest = result.digest;
+            console.log('Transaction successful, digest:', digest);
+            toast.success(`Transaction successfull ${digest}`)
+            reset()
+
+        } catch(error) {
+            console.error(error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     return (
         <main>
@@ -100,13 +160,22 @@ const Campaign = () => {
                     </div>
                 </div>
                 <div className='bg-gray-800 shadow-md border border-gray-900 rounded-md p-3 px-4 mt-6 order-1 md:order-2'>
-                    <form>
+                    <form onSubmit={handleSubmit(donateFunds)}>
                         <div className='flex flex-col space-y-1'>
                             <label htmlFor="title">Amount</label>
-                            <input type='number' name='title' className='h-[2.5rem] rounded-md px-2 outline-none' placeholder='0.0 SUI' />
+                            <input
+                                type='number'
+                                className='h-[2.5rem] rounded-md px-2 outline-none'
+                                placeholder='0.0 SUI'
+                                {...register('amount')}
+                            />
+                            <span className='text-red-300 text-xs'>{errors?.amount?.message}</span>
                         </div>
                         <div className='mt-4'>
-                            <button type='button' className='w-full h-[3rem] bg-sky-800 rounded-md outline-none hover:scale-[1.05] duration-300'>Fund Campaign</button>
+                            <button type='button' className='w-full h-[3rem] bg-sky-800 rounded-md outline-none hover:scale-[1.05] duration-300' disabled={isLoading}>
+                                {isLoading && (<span className='inline-block w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin'></span>)}
+                                <span>Fund Campaign</span>
+                            </button>
                         </div>
                     </form>
                 </div>
