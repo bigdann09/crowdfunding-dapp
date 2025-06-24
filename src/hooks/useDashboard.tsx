@@ -5,7 +5,7 @@ import { SuiObjectData } from '@mysten/sui/client';
 const useDashboard = () => {
   const dashboardID = useNetworkVariable("crowdfundingDashboard")
 
-  const { data, isPending } = useSuiClientQuery(
+  const { data, isPending, error } = useSuiClientQuery(
     "getObject", {
         id: dashboardID,
         options: {
@@ -24,7 +24,7 @@ const useDashboard = () => {
       };
   }
 
-  return { parse, data, isPending }
+  return { parse, data, isPending, error }
 }
 
 export default useDashboard

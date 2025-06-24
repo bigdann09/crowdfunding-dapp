@@ -3,9 +3,10 @@ import useDashboard from '@/hooks/useDashboard';
 
 const Home = () => {
     // retrieve campaigns and reverse the slice to show new campaigns added
-    const { parse, data, isPending } = useDashboard()
+    const { parse, data, isPending, error } = useDashboard()
     const campaigns = parse(data?.data)?.campaigns.slice().reverse()
-    
+
+    console.log(campaigns, error)
     return (
         <>
             <section className='py-6'>

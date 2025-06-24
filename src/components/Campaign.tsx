@@ -54,7 +54,11 @@ export const Campaign: FC<CampaignProps> = ({ id }) => {
                 ) : status == "upcoming" ? (
                     <button className="block text-center w-full bg-neutral-950/30 py-3 px-4 rounded-md text-gray-300">{countdown}</button>
                 ): (
-                    <></>
+                    <>
+                        {status == "ended" && (
+                            <a href={`campaign/${campaign?.id.id}`} className='block text-center w-full hover:scale-[1.1] duration-300 bg-neutral-900 py-3 px-4 rounded-md text-gray-300'>Ended</a>
+                        )}
+                    </>
                 )}
             </CardDescription>
         </Card>

@@ -14,10 +14,11 @@ import { useForm } from "react-hook-form";
 import { Transaction } from "@mysten/sui/transactions";
 import { useNetworkVariable } from "@/config/networkconfig";
 import { useSignTransaction, useSuiClient } from "@mysten/dapp-kit";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { donateSchema } from "@/lib/schemas/donate";
 import { formatAddress, fromSui, toSui } from "@/lib/utils/util";
+import { useCountdown } from "@/hooks/useCountdown";
 
 interface Field {
     key: string;
@@ -35,6 +36,7 @@ const Campaign = () => {
     const packageID = useNetworkVariable("crowdfundingPackageID")
     const { mutateAsync: signTransactionBlock } = useSignTransaction()
 
+    // react hook form for donate schema
     const { register, handleSubmit, reset, formState: {errors} } = useForm({ resolver: zodResolver(donateSchema) })
 
     const { address } = useParams()
@@ -47,17 +49,20 @@ const Campaign = () => {
 
     const { parse, response, isPending, error , refetch } = useCampaign({id: address})
 
+    const campaign = parse(response?.data)
+    const startTime = useMemo(() => (campaign ? parseInt(campaign?.startTime, 10) : null), [campaign]);
+    const endTime = useMemo(() => (campaign ? parseInt(campaign?.endTime, 10) : null), [campaign]);
+
+    // get campaign countdown and status
+    const { countdown, status } = useCountdown(startTime, endTime);
+
     if (error) {
         toast.error(`${error}`)
         navigate("/")
     }
 
-    if (!response?.data) return null
-    if (isPending) return <div>Loading..</div>
-
-    const campaign = parse(response.data)
-    const raised = fromSui(campaign.donations);
-    const donors = campaign.donors.fields.contents
+    const raised = fromSui(campaign?.donations);
+    const donors = campaign?.donors?.fields.contents;
 
     async function donateFunds(data: any) {
         const amount = toSui(parseFloat(data.amount));
@@ -108,6 +113,9 @@ const Campaign = () => {
         }
     }
 
+    if (!response?.data) return null
+    if (isPending) return <div>Loading..</div>
+
     return (
         <main>
             <section className='w-full relative py-3 mt-4 grid lg:grid-cols-[75%_25%] px-2'>
@@ -121,7 +129,7 @@ const Campaign = () => {
                     </div>
                     <div className='w-[33.3%] md:w-[70%] bg-gray-800 shadow-sm rounded-md py-1'>
                         <h2 className='font-bold text-lg text-center bg-gray-900'>Target</h2>
-                        <p className='text-3xl text-center py-2'>{campaign.goal.toLocaleString()} sui</p>
+                        <p className='text-3xl text-center py-2'>{campaign?.goal.toLocaleString()} sui</p>
                     </div>
                     <div className='w-[33.3%] md:w-[70%] bg-gray-800 shadow-sm rounded-md py-1'>
                         <h2 className='font-bold text-lg text-center bg-gray-900'>Raised</h2>
@@ -156,7 +164,7 @@ const Campaign = () => {
                                         {(donors as Donation[]).map((donor, idx) => (
                                             <TableRow key={idx}>
                                                 <TableCell className="font-medium">{formatAddress(donor.fields.key, 12)}</TableCell>
-                                                <TableCell>{fromSui(donor.fields.value).toLocaleString()} SUI</TableCell>
+                                                <TableCell>{fromSui(donor?.fields?.value).toLocaleString()} SUI</TableCell>
                                             </TableRow>
                                         ))}
                                     </>
@@ -182,9 +190,17 @@ const Campaign = () => {
                             <span className='text-red-300 text-xs'>{errors?.amount?.message}</span>
                         </div>
                         <div className='mt-4'>
-                            <button type='submit' className='w-full h-[3rem] bg-sky-800 rounded-md outline-none hover:scale-[1.05] duration-300 flex gap-x-2 items-center justify-center' disabled={isLoading}>
+                            <button type='submit' className='w-full h-[3rem] bg-sky-800 rounded-md outline-none hover:scale-[1.05] duration-300 flex gap-x-2 items-center justify-center' disabled={isLoading || status == "ended" || status == "upcoming"}>
                                 {isLoading && (<span className='inline-block w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin'></span>)}
-                                <span>Fund Campaign</span>
+                                {status == "upcoming" ? (
+                                    <span>{countdown}</span>
+                                ) : status == "active" ? (
+                                    <span>Fund Campaign</span>
+                                ) : (
+                                    <>
+                                        {status == "ended" && (<span>Ended</span>)}
+                                    </>
+                                )}
                             </button>
                         </div>
                     </form>
