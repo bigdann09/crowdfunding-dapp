@@ -1,80 +1,32 @@
 "use client";
 import { animate, motion } from "framer-motion";
-import React, { FC, useEffect, useCallback, useState, useMemo } from "react";
+import React, { FC, useEffect, useState, useMemo } from "react";
 import { cn } from "../lib/utils";
-import { Link } from "react-router-dom";
 import useCampaign from "@/hooks/useCampaign";
 import { fromSui } from "@/lib/utils/util";
+import { useCountdown } from "@/hooks/useCountdown";
 
 type CampaignProps = {
     id: string
 }
 
 export const Campaign: FC<CampaignProps> = ({ id }) => {
-    const [status, setStatus] = useState<string>("")
-    const [countdown, setCountdown] = useState<string>("")
     const [progress, setProgress] = useState(0)
 
     const {parse, response, isPending} = useCampaign({id});
     const campaign = parse(response?.data)
 
-
-    console.log(campaign)
     const startTime = useMemo(() => (campaign ? parseInt(campaign.startTime, 10) : null), [campaign]);
     const endTime = useMemo(() => (campaign ? parseInt(campaign.endTime, 10) : null), [campaign]);
+
+    // get campaign countdown and status
+    const { countdown, status } = useCountdown(startTime, endTime);
 
     useEffect(() => {
         if (campaign != null) {
             setProgress((fromSui(campaign.donations)/campaign.goal) * 100)
         }
     }, [campaign])
-
-    useEffect(() => {
-        if (startTime === null || endTime === null) return;
-
-        const updateCountdown = () => {
-            const now = Date.now();
-            let targetTime, status;
-
-            if (now < startTime) {
-                // Campaign hasn't started
-                targetTime = startTime;
-                status = 'upcoming';
-            } else if (now >= startTime && now <= endTime) {
-                // Campaign is active
-                targetTime = endTime;
-                status = 'active';
-            } else {
-                // Campaign has ended
-                setCountdown('Campaign has ended');
-                setStatus('ended');
-                return;
-            }
-
-            setStatus(status);
-
-            const timeLeft = targetTime - now;
-            if (timeLeft <= 0) {
-                setCountdown(status === 'upcoming' ? 'Campaign is starting!' : 'Campaign has ended');
-                setStatus(status === 'upcoming' ? 'active' : 'ended');
-                return;
-            }
-
-            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-            setCountdown(
-                `${days}d ${hours}h ${minutes}m ${seconds}s ${status === 'upcoming' ? 'until start' : 'remaining'}`
-            );
-        };
-
-        updateCountdown();
-        const interval = setInterval(updateCountdown, 1000);
-
-        return () => clearInterval(interval);
-    }, [startTime, endTime])
 
     if (isPending) return <span>Loading...</span>
     if (!response?.data) return;
