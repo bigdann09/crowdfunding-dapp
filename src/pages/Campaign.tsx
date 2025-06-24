@@ -18,9 +18,13 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { donateSchema } from "@/lib/schemas/donate";
 
+interface Field {
+    key: string;
+    value: string;
+}
 interface Donation {
-    address: string;
-    amount: number;
+    fields: Field;
+    type: string
 }
 
 const Campaign = () => {
@@ -40,29 +44,39 @@ const Campaign = () => {
         return
     }
 
-    function formatAddress(address: string) {
-        let start = address.substring(0, 6)
-        let end = address.substring(address.length - 6)
+    function formatAddress(address: string, length = 6) {
+        let start = address.substring(0, length)
+        let end = address.substring(address.length - length)
         return `${start}****${end}`
     }
 
-    const { parse, response, isPending } = useCampaign({id: address})
+    const { parse, response, isPending, error , refetch } = useCampaign({id: address})
+
+    if (error) {
+        toast.error(`${error}`)
+        navigate("/")
+    }
 
     if (!response?.data) return null
     if (isPending) return <div>Loading..</div>
 
     const campaign = parse(response.data)
+    const raised = campaign.donations / 1000000000;
+    const donors = campaign.donors.fields.contents
 
     async function donateFunds(data: any) {
-        const amount = data.amount;
+        const amount = Math.floor(parseFloat(data.amount) * 1_000_000_000);
 
         try {
             setIsLoading(true)
             const tx = new Transaction();
+
+            const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(amount)]);
+
             tx.moveCall({
                 arguments: [
                     tx.object(address!),
-                    tx.pure.u64(amount),
+                    coin,
                     tx.object.clock()
                 ],
                 target: `${packageID}::crowdfunding::pledge`
@@ -90,6 +104,7 @@ const Campaign = () => {
             console.log('Transaction successful, digest:', digest);
             toast.success(`Transaction successfull ${digest}`)
             reset()
+            refetch()
 
         } catch(error) {
             console.error(error)
@@ -104,7 +119,7 @@ const Campaign = () => {
                 <div className='bg-green-700 h-[18rem] rounded-md relative before:absolute before:top-0 before:left-0 before:w-full before:h-full before:bg-gray-700/20 before:rounded-md'>
                     <img src={One} alt={"ddd"} className='w-full h-full object-cover rounded-md' />
                 </div>
-                <div className='w-full flex flex-row md:flex-col items-center justify-center py-4 gap-x-3 gap-y-3'>
+                <div className='w-full flex flex-row lg:flex-col items-center justify-center py-4 gap-x-3 gap-y-3'>
                     <div className='w-[33.3%] md:w-[70%] bg-gray-800 shadow-sm rounded-md py-1'>
                         <h2 className='font-bold text-lg text-center bg-gray-900'>Days Left</h2>
                         <p className='text-[1.9rem] text-center py-1'>3</p>
@@ -115,7 +130,7 @@ const Campaign = () => {
                     </div>
                     <div className='w-[33.3%] md:w-[70%] bg-gray-800 shadow-sm rounded-md py-1'>
                         <h2 className='font-bold text-lg text-center bg-gray-900'>Raised</h2>
-                        <p className='text-3xl text-center py-2'>{campaign.donations.toLocaleString()} sui</p>
+                        <p className='text-3xl text-center py-2'>{raised.toLocaleString()} SUI</p>
                     </div>
                 </div>
             </section>
@@ -141,12 +156,12 @@ const Campaign = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {campaign.donors.length > 0 ? (
+                                {(donors as Donation[]).length > 0 ? (
                                     <>
-                                        {(campaign.donors as Donation[]).map((donor, idx) => (
+                                        {(donors as Donation[]).map((donor, idx) => (
                                             <TableRow key={idx}>
-                                                <TableCell className="font-medium">{donor.address}</TableCell>
-                                                <TableCell>{donor.amount}</TableCell>
+                                                <TableCell className="font-medium">{formatAddress(donor.fields.key, 12)}</TableCell>
+                                                <TableCell>{(Number(donor.fields.value) / 1_000_000_000).toLocaleString()} SUI</TableCell>
                                             </TableRow>
                                         ))}
                                     </>
@@ -164,7 +179,7 @@ const Campaign = () => {
                         <div className='flex flex-col space-y-1'>
                             <label htmlFor="title">Amount</label>
                             <input
-                                type='number'
+                                type='test'
                                 className='h-[2.5rem] rounded-md px-2 outline-none'
                                 placeholder='0.0 SUI'
                                 {...register('amount')}
@@ -172,7 +187,7 @@ const Campaign = () => {
                             <span className='text-red-300 text-xs'>{errors?.amount?.message}</span>
                         </div>
                         <div className='mt-4'>
-                            <button type='button' className='w-full h-[3rem] bg-sky-800 rounded-md outline-none hover:scale-[1.05] duration-300' disabled={isLoading}>
+                            <button type='submit' className='w-full h-[3rem] bg-sky-800 rounded-md outline-none hover:scale-[1.05] duration-300 flex gap-x-2 items-center justify-center' disabled={isLoading}>
                                 {isLoading && (<span className='inline-block w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin'></span>)}
                                 <span>Fund Campaign</span>
                             </button>

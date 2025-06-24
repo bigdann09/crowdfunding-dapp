@@ -3,10 +3,7 @@ import { animate, motion } from "framer-motion";
 import React, { FC, useEffect, useState } from "react";
 import { cn } from "../lib/utils";
 import { Link } from "react-router-dom";
-import { useSuiClientQuery } from "@mysten/dapp-kit";
-import { SuiObjectData } from "@mysten/sui/client";
 import useCampaign from "@/hooks/useCampaign";
-import { time } from "console";
 
 type CampaignProps = {
     id: string
@@ -32,7 +29,7 @@ export const Campaign: FC<CampaignProps> = ({ id }) => {
         if (now < start) {
             setHasStarted(false)
             setHasEnded(false)
-            console.log(has )
+            // console.log(has )
         } else if ((end.getTime() - now.getTime()) < 0) {
             setHasEnded(true)
         } else {
@@ -40,10 +37,10 @@ export const Campaign: FC<CampaignProps> = ({ id }) => {
         }
     }
 
-    useEffect(() => {
-        let timer = setInterval(() => updateCountdown(), 1000)
-        return () => clearInterval(timer)
-    }, [])
+    // useEffect(() => {
+    //     let timer = setInterval(() => updateCountdown(), 1000)
+    //     return () => clearInterval(timer)
+    // }, [updateCountdown])
 
 
     // useEffect(() => {

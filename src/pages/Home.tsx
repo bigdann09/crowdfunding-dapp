@@ -2,11 +2,11 @@ import { Campaign } from '../components/Campaign';
 import useDashboard from '@/hooks/useDashboard';
 
 const Home = () => {
+    // retrieve campaigns and reverse the slice to show new campaigns added
     const { parse, data, isPending } = useDashboard()
-
-    // reverse the slice to show new campaigns added
     const campaigns = parse(data?.data)?.campaigns.slice().reverse()
 
+    console.log(campaigns)
     return (
         <>
             <section className='py-6'>
