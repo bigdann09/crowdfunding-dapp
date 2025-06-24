@@ -17,6 +17,7 @@ import { useSignTransaction, useSuiClient } from "@mysten/dapp-kit";
 import { useState } from "react";
 import { toast } from "sonner";
 import { donateSchema } from "@/lib/schemas/donate";
+import { formatAddress, fromSui, toSui } from "@/lib/utils/util";
 
 interface Field {
     key: string;
@@ -44,12 +45,6 @@ const Campaign = () => {
         return
     }
 
-    function formatAddress(address: string, length = 6) {
-        let start = address.substring(0, length)
-        let end = address.substring(address.length - length)
-        return `${start}****${end}`
-    }
-
     const { parse, response, isPending, error , refetch } = useCampaign({id: address})
 
     if (error) {
@@ -61,11 +56,11 @@ const Campaign = () => {
     if (isPending) return <div>Loading..</div>
 
     const campaign = parse(response.data)
-    const raised = campaign.donations / 1000000000;
+    const raised = fromSui(campaign.donations);
     const donors = campaign.donors.fields.contents
 
     async function donateFunds(data: any) {
-        const amount = Math.floor(parseFloat(data.amount) * 1_000_000_000);
+        const amount = toSui(parseFloat(data.amount));
 
         try {
             setIsLoading(true)
@@ -161,7 +156,7 @@ const Campaign = () => {
                                         {(donors as Donation[]).map((donor, idx) => (
                                             <TableRow key={idx}>
                                                 <TableCell className="font-medium">{formatAddress(donor.fields.key, 12)}</TableCell>
-                                                <TableCell>{(Number(donor.fields.value) / 1_000_000_000).toLocaleString()} SUI</TableCell>
+                                                <TableCell>{fromSui(donor.fields.value).toLocaleString()} SUI</TableCell>
                                             </TableRow>
                                         ))}
                                     </>

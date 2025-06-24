@@ -1,92 +1,108 @@
 "use client";
 import { animate, motion } from "framer-motion";
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useCallback, useState, useMemo } from "react";
 import { cn } from "../lib/utils";
 import { Link } from "react-router-dom";
 import useCampaign from "@/hooks/useCampaign";
+import { fromSui } from "@/lib/utils/util";
 
 type CampaignProps = {
     id: string
 }
 
 export const Campaign: FC<CampaignProps> = ({ id }) => {
-    const [hasStarted, setHasStarted] = useState(false)
-    const [hasEnded, setHasEnded] = useState(false)
-    const {parse, response} = useCampaign({id});
+    const [status, setStatus] = useState<string>("")
+    const [countdown, setCountdown] = useState<string>("")
+    const [progress, setProgress] = useState(0)
 
-    if (!response?.data) return null;
+    const {parse, response, isPending} = useCampaign({id});
+    const campaign = parse(response?.data)
 
-    const campaign = parse(response.data);
-    const progress = (campaign.donations/campaign.goal) * 100;
 
-    console.log(`startTime: ${campaign.startTime}, endTime: ${campaign.endTime}`)
+    console.log(campaign)
+    const startTime = useMemo(() => (campaign ? parseInt(campaign.startTime, 10) : null), [campaign]);
+    const endTime = useMemo(() => (campaign ? parseInt(campaign.endTime, 10) : null), [campaign]);
 
-    function updateCountdown() {
-        const start = new Date(campaign.startTime)
-        const end = new Date(campaign.endTime)
-        const now = new Date()
-
-        if (now < start) {
-            setHasStarted(false)
-            setHasEnded(false)
-            // console.log(has )
-        } else if ((end.getTime() - now.getTime()) < 0) {
-            setHasEnded(true)
-        } else {
-            setHasStarted(true)
+    useEffect(() => {
+        if (campaign != null) {
+            setProgress((fromSui(campaign.donations)/campaign.goal) * 100)
         }
-    }
+    }, [campaign])
 
-    // useEffect(() => {
-    //     let timer = setInterval(() => updateCountdown(), 1000)
-    //     return () => clearInterval(timer)
-    // }, [updateCountdown])
+    useEffect(() => {
+        if (startTime === null || endTime === null) return;
 
+        const updateCountdown = () => {
+            const now = Date.now();
+            let targetTime, status;
 
-    // useEffect(() => {
-    //     const timeInterval = setInterval(() => {
-    //         const parsedStartTime = Math.floor(startTime / 1000)
-    //         const parsedEndTime = Math.floor(endTime / 1000)
-    //         const now = Math.floor(Date.now() / 1000)
+            if (now < startTime) {
+                // Campaign hasn't started
+                targetTime = startTime;
+                status = 'upcoming';
+            } else if (now >= startTime && now <= endTime) {
+                // Campaign is active
+                targetTime = endTime;
+                status = 'active';
+            } else {
+                // Campaign has ended
+                setCountdown('Campaign has ended');
+                setStatus('ended');
+                return;
+            }
 
-    //         if (parsedStartTime > now) {
-    //             setHasStarted(false)
-    //             // update time counter
-    //         } else if (parsedEndTime > parsedStartTime) {
-    //             setHasEnded(true)
-    //             // update time counter
-    //         } else {
-    //             setHasStarted(false)
-    //             // update time counter
-    //         }
-    //     }, 1000)
+            setStatus(status);
 
-    //     return () => clearInterval(timeInterval)
-    // }, [startTime, endTime])
+            const timeLeft = targetTime - now;
+            if (timeLeft <= 0) {
+                setCountdown(status === 'upcoming' ? 'Campaign is starting!' : 'Campaign has ended');
+                setStatus(status === 'upcoming' ? 'active' : 'ended');
+                return;
+            }
+
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+            setCountdown(
+                `${days}d ${hours}h ${minutes}m ${seconds}s ${status === 'upcoming' ? 'until start' : 'remaining'}`
+            );
+        };
+
+        updateCountdown();
+        const interval = setInterval(updateCountdown, 1000);
+
+        return () => clearInterval(interval);
+    }, [startTime, endTime])
+
+    if (isPending) return <span>Loading...</span>
+    if (!response?.data) return;
 
     return (
         <Card className='relative'>
-            <div className='absolute top-1 -right-2 bg-[#282828] border border-sky-800/30 shadow-sm p-2 rounded-md text-sm'>{!hasStarted ? 'Not Started' : hasEnded ? 'Ended' : 'Days Left: 3'}</div>
+            <div className='absolute top-1 -right-2 bg-[#282828] border border-sky-800/30 shadow-sm p-2 rounded-md text-sm'>{status.toUpperCase()}</div>
             <CardSkeletonContainer>
                 <Skeleton />
             </CardSkeletonContainer>
-            <CardTitle>{campaign.title}</CardTitle>
+            <CardTitle>{campaign?.title}</CardTitle>
             <CardDescription>
-                <p className='line-clamp-1'>{campaign.description}</p>
+                <p className='line-clamp-1'>{campaign?.description}</p>
                 <div className='py-4'>
                     <div className='w-full flex justify-between text-xs text-gray-50'>
-                        <span className='font-bold'>Raised: {`${campaign.donations} SUI`}</span>
-                        <span>Target: {`${campaign.goal} SUI`}</span>
+                        <span className='font-bold'>Raised: {`${fromSui(campaign?.donations)} SUI`}</span>
+                        <span>Target: {`${campaign?.goal} SUI`}</span>
                     </div>
                     <div className='my-2 w-full relative h-[.3rem] bg-[#5a5b5d] rounded-md'>
                         <div className={`absolute left-0 top-0 h-full bg-sky-500 rounded-md`} style={{width: progress}}></div>
                     </div>
                 </div>
-                {hasStarted && !hasEnded ? (
-                    <Link to={`${encodeURI('campaign/' + campaign.title)}`} className='block text-center w-full hover:scale-[1.1] duration-300 bg-white py-3 px-4 rounded-md text-gray-900'>Fund Campaign</Link>
-                ) : (
-                    <button className="block text-center w-full bg-neutral-950/30 py-3 px-4 rounded-md text-gray-300">
-                        {!hasStarted ? (<span>Starts in <b>1hr:22mins:24secs</b></span>) : hasEnded ? 'Ended' : null}</button>
+                {status == "active" ? (
+                    <a href={`campaign/${campaign?.id.id}`} className='block text-center w-full hover:scale-[1.1] duration-300 bg-white py-3 px-4 rounded-md text-gray-900'>Fund Campaign</a>
+                ) : status == "upcoming" ? (
+                    <button className="block text-center w-full bg-neutral-950/30 py-3 px-4 rounded-md text-gray-300">{countdown}</button>
+                ): (
+                    <></>
                 )}
             </CardDescription>
         </Card>
