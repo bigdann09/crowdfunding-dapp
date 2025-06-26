@@ -24,7 +24,7 @@ export const Campaign: FC<CampaignProps> = ({ id }) => {
 
     useEffect(() => {
         if (campaign != null) {
-            setProgress((fromSui(campaign.donations)/campaign.goal) * 100)
+            setProgress(fromSui(campaign.donations/campaign.goal) * 100)
         }
     }, [campaign])
 
@@ -46,7 +46,7 @@ export const Campaign: FC<CampaignProps> = ({ id }) => {
                         <span>Target: {`${campaign?.goal} SUI`}</span>
                     </div>
                     <div className='my-2 w-full relative h-[.3rem] bg-[#5a5b5d] rounded-md'>
-                        <div className={`absolute left-0 top-0 h-full bg-sky-500 rounded-md`} style={{width: progress}}></div>
+                        <div className={`absolute left-0 top-0 h-full bg-sky-500 rounded-md`} style={{width: `${progress}%`}}></div>
                     </div>
                 </div>
                 {status == "active" ? (

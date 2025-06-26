@@ -9,7 +9,7 @@ const Home = () => {
     return (
         <>
             <section className='py-6'>
-                {campaigns?.length > 0 ? (
+                {campaigns && campaigns.length > 0 ? (
                     <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 px-4 py-2'>
                         {isPending ? (
                             <div className='px-6'>Loading...</div>

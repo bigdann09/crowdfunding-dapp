@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form';
+import { FieldError, useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNetworkVariable } from '@/config/networkconfig';
 import { Transaction } from '@mysten/sui/transactions';
@@ -93,7 +93,9 @@ const CreateCampaign = () => {
                             className='w-full h-[3rem] rounded-md px-2 input'
                             {...register('title')}
                         />
-                        <span className='text-red-300 text-xs'>{errors?.title?.message}</span>
+                        {errors.title && (
+                            <span className='text-red-300 text-xs'>{errors?.title?.message as string}</span>
+                        )}
                     </div>
                     <div className="space-y-2">
                         <label htmlFor="goal" className='text-[1.1rem]'>Target Amount</label>
@@ -102,7 +104,9 @@ const CreateCampaign = () => {
                             className='w-full h-[3rem] rounded-md px-2 input'
                             {...register('goal')}
                         />
-                        <span className='text-red-300 text-xs'>{errors?.goal?.message}</span>
+                        {errors.goal && (
+                            <span className='text-red-300 text-xs'>{errors?.goal?.message as string}</span>
+                        )}
                     </div>
                     <div className="space-y-2">
                         <label htmlFor="startDate" className='text-[1.1rem]'>Start Date</label>
@@ -111,7 +115,9 @@ const CreateCampaign = () => {
                             className='w-full h-[3rem] rounded-md px-2 input'
                             {...register('startDate')}
                         />
-                        <span className='text-red-300 text-xs'>{errors?.startDate?.message}</span>
+                        {errors.startDate && (
+                            <span className='text-red-300 text-xs'>{errors?.startDate?.message as string}</span>
+                        )}
                     </div>
                     <div className="space-y-2">
                         <label htmlFor="endDate" className='text-[1.1rem]'>End Date</label>
@@ -120,7 +126,9 @@ const CreateCampaign = () => {
                             className='w-full h-[3rem] rounded-md px-2 input'
                             {...register('endDate')}
                         />
-                        <span className='text-red-300 text-xs'>{errors?.endDate?.message}</span>
+                        {errors.endDate && (
+                            <span className='text-red-300 text-xs'>{errors?.endDate?.message as string}</span>
+                        )}
                     </div>
                     <div className="space-y-2">
                         <label htmlFor="description" className='text-[1.1rem]'>Description/Story</label>
@@ -128,7 +136,9 @@ const CreateCampaign = () => {
                             className='block w-full resize-none h-[7rem] rounded-md input p-3'
                             {...register('description')}
                         ></textarea>
-                        <span className='text-red-300 text-xs'>{errors?.description?.message}</span>
+                        {errors.description && (
+                            <span className='text-red-300 text-xs'>{errors?.description?.message as string}</span>
+                        )}
                     </div>
                     <div>
                         <button className='w-full py-2 px-4 rounded-md bg-sky-800 flex items-center justify-center gap-x-3' disabled={isLoading}>

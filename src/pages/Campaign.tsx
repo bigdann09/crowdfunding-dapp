@@ -33,10 +33,16 @@ interface id {
     id: string
 }
 
+type CampaignCap = {
+    id: id;
+    campaign_id: string;
+    creator: string
+}
+
 const Campaign = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [isCreator, setIsCreator] = useState(false)
-    const [campaignCap, setCampaignCap] = useState(null)
+    const [campaignCap, setCampaignCap] = useState<string | null>(null)
     const [modalOpen, setModalOpen] = useState(false)
     const [field, setField] = useState<Field | null>(null)
 
@@ -86,9 +92,9 @@ const Campaign = () => {
 
                 for (const obj of objects.data) {
                     if (obj?.data?.content?.dataType == "moveObject") {
-                        const fields = obj.data?.content?.fields;
+                        const fields = obj.data?.content?.fields as CampaignCap;
                         if (fields?.campaign_id === campaign?.id.id) {
-                            setCampaignCap(fields?.id?.id)
+                            setCampaignCap(fields?.id.id)
                         }
                     }
                 }
@@ -400,7 +406,7 @@ const Campaign = () => {
                                         {(donors as Donation[]).map((donor, idx) => (
                                             <TableRow key={idx}>
                                                 <TableCell className="font-medium">{formatAddress(donor.fields.key, 12)}</TableCell>
-                                                <TableCell>{fromSui(donor?.fields?.value).toLocaleString()} SUI</TableCell>
+                                                <TableCell>{fromSui(Number(donor?.fields?.value)).toLocaleString()} SUI</TableCell>
                                                 <TableCell>
                                                     {account?.address == donor?.fields?.key && (
                                                         <button
@@ -436,7 +442,9 @@ const Campaign = () => {
                                 placeholder='0.0 SUI'
                                 {...register('amount')}
                             />
-                            <span className='text-red-300 text-xs'>{errors?.amount?.message}</span>
+                            {errors.amount && (
+                                <span className='text-red-300 text-xs'>{errors?.amount?.message as string}</span>
+                            )}
                         </div>
                         <div className='mt-4'>
                             <button type='submit' className='w-full h-[3rem] bg-sky-800 rounded-md outline-none hover:scale-[1.05] duration-300 flex gap-x-2 items-center justify-center' disabled={isLoading || status == "ended" || status == "upcoming"}>
