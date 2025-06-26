@@ -33,7 +33,7 @@ export const Campaign: FC<CampaignProps> = ({ id }) => {
 
     return (
         <Card className='relative'>
-            <div className='absolute top-1 -right-2 bg-[#282828] border border-sky-800/30 shadow-sm p-2 rounded-md text-sm'>{status.toUpperCase()}</div>
+            <div className='absolute top-1 -right-2 bg-[#282828] border border-sky-800/30 shadow-sm p-2 rounded-md text-sm'>{campaign?.status?.variant == "Active" ? status.toUpperCase() : campaign?.status?.variant.toUpperCase()}</div>
             <CardSkeletonContainer>
                 <Skeleton />
             </CardSkeletonContainer>
@@ -53,10 +53,12 @@ export const Campaign: FC<CampaignProps> = ({ id }) => {
                     <a href={`campaign/${campaign?.id.id}`} className='block text-center w-full hover:scale-[1.1] duration-300 bg-white py-3 px-4 rounded-md text-gray-900'>Fund Campaign</a>
                 ) : status == "upcoming" ? (
                     <button className="block text-center w-full bg-neutral-950/30 py-3 px-4 rounded-md text-gray-300">{countdown}</button>
-                ): (
+                ) : (status == "ended" && campaign?.status?.variant == "Active") ? (
+                    <a href={`campaign/${campaign?.id.id}`} className='block text-center w-full hover:scale-[1.1] duration-300 bg-neutral-900 py-3 px-4 rounded-md text-gray-300'>Ended</a>
+                ) : (
                     <>
-                        {status == "ended" && (
-                            <a href={`campaign/${campaign?.id.id}`} className='block text-center w-full hover:scale-[1.1] duration-300 bg-neutral-900 py-3 px-4 rounded-md text-gray-300'>Ended</a>
+                        {campaign?.status?.variant == "Cancelled" && (
+                            <a href={`campaign/${campaign?.id.id}`} className='block text-center w-full hover:scale-[1.1] duration-300 bg-neutral-900 py-3 px-4 rounded-md text-gray-300'>Cancelled</a>
                         )}
                     </>
                 )}

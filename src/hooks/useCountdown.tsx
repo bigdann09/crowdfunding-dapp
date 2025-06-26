@@ -24,7 +24,7 @@ export const useCountdown = (startTime: number | null, endTime: number | null) =
         targetTime = endTime;
         newStatus = 'active';
       } else {
-        setCountdown('Campaign has ended');
+        setCountdown("0");
         setStatus('ended');
         return;
       }
